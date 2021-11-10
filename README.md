@@ -1,6 +1,6 @@
 # Continuous Testing of Machine Learning Projects
 
-    Testing software is vital to ensure that code behaves as expected. In Machine Learning projects, testing is not as widely common as normal software testing. The aim of this talk is to give a brief overview on unit testing and to show how a Data Scientist/Machine Learning Engineer can implement it in a modern Machine Learning Development Lifecycle along with DevOps principles such as CI/CD.
+Testing software is vital to ensure that code behaves as expected. In Machine Learning projects, testing is not as widely common as normal software testing. The aim of this talk is to give a brief overview on unit testing and to show how a Data Scientist/Machine Learning Engineer can implement it in a modern Machine Learning Development Lifecycle along with DevOps principles such as CI/CD.
 
 ## Project Organization
 
@@ -50,5 +50,3 @@
     └── tox.ini            <- tox file with settings for running tox; see tox.readthedocs.io
 
 ---
-
-<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
