@@ -94,7 +94,7 @@ class TrainModel:
         # Merging both dfs together
         # Possible values in indicator are: ['left_only', 'right_only', 'both']
         # 'both' means that the rows exist in both dfs
-        df = (
+        exists = (
             pd.merge(
                 train["Id"],
                 test["Id"],
@@ -105,7 +105,7 @@ class TrainModel:
             .exist.unique()
             .tolist()
         )
-        if "both" in df:
+        if "both" in exists:
             return True
         return False
 
@@ -137,6 +137,9 @@ class TrainModel:
         ), "Failed pre-train test"
         logging.info("Passed pre-training tests, starting training")
         X_train, y_train, X_valid, y_test = self.get_train_valid(train, test)
+        # TODO:
+        # Train model and save to models dir
+        # Run post train tests
 
 
 if __name__ == "__main__":
