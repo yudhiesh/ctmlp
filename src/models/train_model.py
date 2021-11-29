@@ -78,6 +78,7 @@ class TrainModel:
         return (X_train, y_train, X_valid, y_test)
 
     def process_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Basic feature processor that fills NaN values with mean"""
         df = df.fillna(df.mean())
         return df
 
@@ -109,7 +110,10 @@ class TrainModel:
             return True
         return False
 
-    def is_overfitting_batch(self):
+    def is_overfitting_batch(self) -> bool:
+        """
+        Checks whether the model is able to overfit a single batch of data
+        """
         train, _ = self.load_dataset()
         batch = train.sample(
             n=self.batch_size,
