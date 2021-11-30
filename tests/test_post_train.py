@@ -6,14 +6,12 @@ import pytest
 from helpers.utils import get_features_labels, get_test_case, time_predict
 
 
-def test_config(request):
-    """Make sure that the config is being loaded correctly"""
-    score = request.config.getini("rmse")
-    assert int(score) == 40_000
-
-
 @pytest.mark.parametrize(
-    "kwargs", [({"key": "YearBuilt", "add": 1}), ({"key": "LotFrontage", "add": 5}),]
+    "kwargs",
+    [
+        # 1. Having a house built later should not impact the SalePrice
+        ({"key": "YearBuilt", "add": 1}),
+    ],
 )
 def test_invariance_tests(kwargs, model, dummy_house):
     """
@@ -21,12 +19,20 @@ def test_invariance_tests(kwargs, model, dummy_house):
     Changing these features a bit should not result in a noticeable difference
     in the models prediction with the ground truth
     """
-    changed_score, unchanged_score = get_test_case(dummy_house, model, **kwargs)
+    changed_score, unchanged_score = get_test_case(
+        dummy_house,
+        model,
+        **kwargs,
+    )
     # check that there's about max $5k difference between unchanged and changed
     # house prices
     # $5k is something I feel makes sense, obviously domain knowledge plays
     # a big role in coming up with these test parameters
-    assert math.isclose(changed_score, unchanged_score, rel_tol=5e3)
+    assert math.isclose(
+        changed_score,
+        unchanged_score,
+        rel_tol=5e3,
+    )
 
 
 # TODO: Add in argument to parametrize to handle cases where a feature should
@@ -43,13 +49,19 @@ def test_invariance_tests(kwargs, model, dummy_house):
     ],
 )
 def test_directional_expectation_tests(
-    kwargs, model, dummy_house,
+    kwargs,
+    model,
+    dummy_house,
 ):
     """
     Keeping all except 1 feature at a time the same
     Chaning these features a bit should result in a notieceable difference
     """
-    changed_score, unchanged_score = get_test_case(dummy_house, model, **kwargs)
+    changed_score, unchanged_score = get_test_case(
+        dummy_house,
+        model,
+        **kwargs,
+    )
     assert changed_score > unchanged_score
 
 
