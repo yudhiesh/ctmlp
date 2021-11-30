@@ -1,9 +1,13 @@
-import os
-from typing import Any, Tuple
-import pandas as pd
-import numpy as np
 import logging
+import os
+import pickle
+import json
+from typing import Any, Tuple
 import click
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 
@@ -26,7 +30,7 @@ class TrainModel:
         self.target_column = kwargs.get("target_column", "SalePrice")
         self.batch_size = kwargs.get("batch_size", 32)
         self.seed = kwargs.get("seed", 42)
-        self.save_dir = kwargs.get("save_dir", "../models")
+        self.save_dir = kwargs.get("save_dir", "models")
 
         if not any([self.train_path, self.test_path]) or not any(
             os.path.exists(path)
@@ -72,10 +76,10 @@ class TrainModel:
         X_train, y_train = self.get_features_labels(
             train, target_column=self.target_column
         )
-        X_valid, y_test = self.get_features_labels(
+        X_valid, y_valid = self.get_features_labels(
             test, target_column=self.target_column
         )
-        return (X_train, y_train, X_valid, y_test)
+        return (X_train, y_train, X_valid, y_valid)
 
     def process_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """Basic feature processor that fills NaN values with mean"""
@@ -90,6 +94,7 @@ class TrainModel:
         """
         Check that there is no data leaking into the test dataset
         """
+        logging.info("Checking if there is data leakage")
         if train.equals(test):
             raise Exception("Both dataframes are equal!")
         # Merging both dfs together
@@ -114,6 +119,7 @@ class TrainModel:
         """
         Checks whether the model is able to overfit a single batch of data
         """
+        logging.info("Checking of the model is able to overfit a batch of data")
         train, _ = self.load_dataset()
         batch = train.sample(
             n=self.batch_size,
@@ -134,21 +140,74 @@ class TrainModel:
         """Returns the current model class that is being used"""
         return LinearRegression()
 
-    def run_training(self):
+    def run_training(self) -> None:
+        """Runs training of a model which then saves the metrics and model"""
         train, test = self.load_dataset()
         assert (
-            not self.is_data_leaking(train, test) and self.is_overfitting_batch()
+            not self.is_data_leaking(
+                train,
+                test,
+            )
+            and self.is_overfitting_batch()
         ), "Failed pre-train test"
         logging.info("Passed pre-training tests, starting training")
-        X_train, y_train, X_valid, y_test = self.get_train_valid(train, test)
-        # TODO:
-        # Train model and save to models dir
-        # Run post train tests
+        X_train, y_train, X_test, y_test = self.get_train_valid(train, test)
+        model = self.get_model()
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        rmse = round(
+            mean_squared_error(
+                y_true=y_test,
+                y_pred=y_pred,
+                squared=False,
+            ),
+            2,
+        )
+        logging.info(f"Completed training with RMSE: {rmse}")
+        metric = {"rmse": rmse}
+        self.save_model(model)
+        with open("test_score.json", "w") as file:
+            json.dump(metric, file)
+        logging.info("Saved test_score")
+        logging.info("Completed training & testing")
+
+    def save_model(self, data: Any) -> None:
+        """Saves model to models/model.pkl"""
+        filename = "model.pkl"
+        save_path = Path(self.save_dir).resolve() / filename
+        try:
+            pickle.dump(
+                data,
+                open(
+                    save_path.as_posix(),
+                    "wb",
+                ),
+            )
+        except pickle.PickleError:
+            logging.error("Unable to pickle data")
+            raise
+        logging.info(f"Saved data to : {save_path.as_posix()}")
+
+
+@click.command()
+@click.option(
+    "--train_path",
+    type=str,
+    required=True,
+    help="Path to the train data",
+)
+@click.option(
+    "--test_path",
+    type=str,
+    required=True,
+    help="Path to the test data",
+)
+def main(train_path, test_path):
+    TrainModel(
+        train_path=train_path,
+        test_path=test_path,
+    ).run_training()
 
 
 if __name__ == "__main__":
-
-    TrainModel(
-        train_path="./data/raw/train.csv",
-        test_path="./data/raw/test.csv",
-    ).run_training()
+    main()
