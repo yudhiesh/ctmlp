@@ -28,8 +28,8 @@ class TrainModel:
         self.train_path = train_path
         self.test_path = test_path
         self.target_column = kwargs.get("target_column", "SalePrice")
-        self.batch_size = kwargs.get("batch_size", 32)
-        self.seed = kwargs.get("seed", 42)
+        self.batch_size = int(kwargs.get("batch_size", 32))
+        self.seed = int(kwargs.get("seed", 42))
         self.save_dir = kwargs.get("save_dir", "models")
 
         if not any([self.train_path, self.test_path]) or not any(
@@ -189,7 +189,12 @@ class TrainModel:
         logging.info(f"Saved data to : {save_path.as_posix()}")
 
 
-@click.command()
+@click.command(
+    context_settings=dict(
+        ignore_unknown_options=True,
+        allow_extra_args=True,
+    ),
+)
 @click.option(
     "--train_path",
     type=str,
@@ -202,10 +207,15 @@ class TrainModel:
     required=True,
     help="Path to the test data",
 )
-def main(train_path, test_path):
+@click.pass_context
+def main(ctx, train_path, test_path):
+    kwargs = dict(
+        [item.strip("--").split("=") for item in ctx.args],
+    )
     TrainModel(
         train_path=train_path,
         test_path=test_path,
+        **kwargs,
     ).run_training()
 
 
