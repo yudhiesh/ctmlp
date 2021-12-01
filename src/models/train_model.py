@@ -14,10 +14,7 @@ from sklearn.metrics import mean_squared_error
 FEATURES_LABLES = Tuple[pd.DataFrame, pd.DataFrame]
 TRAIN_TEST = Tuple[pd.DataFrame, pd.DataFrame]
 TRAIN_VALID_FEATURES_LABLES = Tuple[
-    pd.DataFrame,
-    pd.DataFrame,
-    pd.DataFrame,
-    pd.DataFrame,
+    pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame,
 ]
 
 logging.basicConfig(level=logging.INFO)
@@ -33,11 +30,7 @@ class TrainModel:
         self.save_dir = kwargs.get("save_dir", "models")
 
         if not any([self.train_path, self.test_path]) or not any(
-            os.path.exists(path)
-            for path in [
-                self.train_path,
-                self.test_path,
-            ]
+            os.path.exists(path) for path in [self.train_path, self.test_path,]
         ):
             raise Exception(
                 "Incorrect path for train or test was passed when training model",
@@ -50,9 +43,7 @@ class TrainModel:
         return (train, test)  # type: ignore
 
     def get_features_labels(
-        self,
-        df: pd.DataFrame,
-        target_column: str,
+        self, df: pd.DataFrame, target_column: str,
     ) -> FEATURES_LABLES:
         """
         Splits the dataframe into features and labels
@@ -66,9 +57,7 @@ class TrainModel:
         return X, y
 
     def get_train_valid(
-        self,
-        train: pd.DataFrame,
-        test: pd.DataFrame,
+        self, train: pd.DataFrame, test: pd.DataFrame,
     ) -> TRAIN_VALID_FEATURES_LABLES:
         """
         Extracts the features and labels from the train and valid datasets
@@ -86,11 +75,7 @@ class TrainModel:
         df = df.fillna(df.mean())
         return df
 
-    def is_data_leaking(
-        self,
-        train: pd.DataFrame,
-        test: pd.DataFrame,
-    ) -> bool:
+    def is_data_leaking(self, train: pd.DataFrame, test: pd.DataFrame,) -> bool:
         """
         Check that there is no data leaking into the test dataset
         """
@@ -102,11 +87,7 @@ class TrainModel:
         # 'both' means that the rows exist in both dfs
         exists = (
             pd.merge(
-                train["Id"],
-                test["Id"],
-                on=["Id"],
-                how="outer",
-                indicator="exist",
+                train["Id"], test["Id"], on=["Id"], how="outer", indicator="exist",
             )
             .exist.unique()
             .tolist()
@@ -121,13 +102,9 @@ class TrainModel:
         """
         logging.info("Checking of the model is able to overfit a batch of data")
         train, _ = self.load_dataset()
-        batch = train.sample(
-            n=self.batch_size,
-            random_state=self.seed,
-        )
+        batch = train.sample(n=self.batch_size, random_state=self.seed,)
         batch_X, batch_y = self.get_features_labels(
-            df=batch,
-            target_column=self.target_column,
+            df=batch, target_column=self.target_column,
         )
         model = self.get_model()
         model.fit(batch_X, batch_y)
@@ -143,25 +120,16 @@ class TrainModel:
     def run_training(self) -> None:
         """Runs training of a model which then saves the metrics and model"""
         train, test = self.load_dataset()
-        assert (
-            not self.is_data_leaking(
-                train,
-                test,
-            )
-            and self.is_overfitting_batch()
-        ), "Failed pre-train test"
+
+        assert not self.is_data_leaking(train, test), "Data leakage detected"
+        assert self.is_overfitting_batch(), "Model unable to overfit a batch of data"
         logging.info("Passed pre-training tests, starting training")
         X_train, y_train, X_test, y_test = self.get_train_valid(train, test)
         model = self.get_model()
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
         rmse = round(
-            mean_squared_error(
-                y_true=y_test,
-                y_pred=y_pred,
-                squared=False,
-            ),
-            2,
+            mean_squared_error(y_true=y_test, y_pred=y_pred, squared=False,), 2,
         )
         logging.info(f"Completed training with RMSE: {rmse}")
         metric = {"rmse": rmse}
@@ -177,11 +145,7 @@ class TrainModel:
         save_path = Path(self.save_dir).resolve() / filename
         try:
             pickle.dump(
-                data,
-                open(
-                    save_path.as_posix(),
-                    "wb",
-                ),
+                data, open(save_path.as_posix(), "wb",),
             )
         except pickle.PickleError:
             logging.error("Unable to pickle data")
@@ -190,33 +154,18 @@ class TrainModel:
 
 
 @click.command(
-    context_settings=dict(
-        ignore_unknown_options=True,
-        allow_extra_args=True,
-    ),
+    context_settings=dict(ignore_unknown_options=True, allow_extra_args=True,),
 )
 @click.option(
-    "--train_path",
-    type=str,
-    required=True,
-    help="Path to the train data",
+    "--train_path", type=str, required=True, help="Path to the train data",
 )
 @click.option(
-    "--test_path",
-    type=str,
-    required=True,
-    help="Path to the test data",
+    "--test_path", type=str, required=True, help="Path to the test data",
 )
 @click.pass_context
 def main(ctx, train_path, test_path):
-    kwargs = dict(
-        [item.strip("--").split("=") for item in ctx.args],
-    )
-    TrainModel(
-        train_path=train_path,
-        test_path=test_path,
-        **kwargs,
-    ).run_training()
+    kwargs = dict([item.strip("--").split("=") for item in ctx.args],)
+    TrainModel(train_path=train_path, test_path=test_path, **kwargs,).run_training()
 
 
 if __name__ == "__main__":
