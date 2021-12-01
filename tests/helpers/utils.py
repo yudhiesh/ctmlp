@@ -6,13 +6,14 @@ import numpy as np
 import pandas as pd
 
 SCORES = Tuple[np.ndarray, np.ndarray]
+FEATURES_LABELS = Tuple[pd.DataFrame, pd.DataFrame]
+ARITHEMETIC_OPERATIONS = Optional[Union[int, float]]
 
 
 def get_features_labels(
-    df: pd.DataFrame, target_column: str,
-) -> Tuple[
-    pd.DataFrame, pd.DataFrame,
-]:
+    df: pd.DataFrame,
+    target_column: str,
+) -> FEATURES_LABELS:
     """
     Splits the dataframe into features and labels
     """
@@ -35,9 +36,14 @@ def time_predict(model: Any, df: pd.DataFrame) -> float:
     return end - start
 
 
-def get_predictions(model: Any, data: pd.DataFrame, data_copy: pd.DataFrame,) -> SCORES:
+def get_predictions(
+    model: Any,
+    data: pd.DataFrame,
+    data_copy: pd.DataFrame,
+) -> SCORES:
     """
-    Helper function to compare predictions of two different dataframes using
+    Helper function to get the prediction of the models for the dataframe with a
+    change in any value and a dataframe without a change in any value
     a model
     """
     changed_df = pd.DataFrame.from_dict([data_copy], orient="columns")
@@ -55,13 +61,15 @@ def get_test_case(
     data: pd.DataFrame,
     model: Any,
     key: str,
-    add: Optional[Union[int, float]] = None,
-    multiply: Optional[Union[int, float]] = None,
+    add: ARITHEMETIC_OPERATIONS = None,
+    multiply: ARITHEMETIC_OPERATIONS = None,
 ) -> SCORES:
     """
     Helper method to create the different test cases that alter the keys in a
     dictionary
     """
+    # Create a deepcopy of the data which will contain the dataframe that will
+    # have an altered value
     data_copy = copy.deepcopy(data)
     value = data.get(key)
     if add:

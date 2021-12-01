@@ -6,7 +6,14 @@ import pytest
 
 
 def pytest_addoption(parser):
-    parser.addini("rmse", "Min RMSE score for a model to past post-train test")
+    """
+    pytest hook that is used to make values from the pytest.ini available to all
+    test
+    """
+    parser.addini(
+        "rmse",
+        "Min RMSE score for a model to past post-train test",
+    )
     parser.addini(
         "inference_time",
         "Max inference time for the model to be making predictions at the 99th percentile",
@@ -15,6 +22,9 @@ def pytest_addoption(parser):
 
 @pytest.fixture
 def dummy_house():
+    """
+    Sample dataset that will be used to alter and make prediction on
+    """
     return {
         "Id": 34,
         "MSSubClass": 20,  # Identifies the type of dwelling involved in the sale.
@@ -59,12 +69,18 @@ def dummy_house():
 
 @pytest.fixture
 def model():
+    """
+    Fixture that loads the already trained model
+    """
     filename = "./models/model.pkl"
     return pickle.load(open(filename, "rb"))
 
 
 @pytest.fixture
 def model_metrics():
+    """
+    Fixture that loads the metrics that are saved of the current model
+    """
     filename = "./test_score.json"
     with open(filename) as f:
         metrics = json.load(f)
@@ -73,5 +89,8 @@ def model_metrics():
 
 @pytest.fixture
 def dataset():
+    """
+    Fixture that loads a bigger dataset
+    """
     filename = "./data/raw/test.csv"
     return pd.read_csv(filename)
