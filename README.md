@@ -13,7 +13,7 @@ Testing software is vital to ensure that code behaves as expected. In Machine Le
 Clone the project
 
 ```bash
-git clone https://link-to-project
+git clone https://github.com/yudhiesh/ctmlp
 ```
 
 Create the conda environment
