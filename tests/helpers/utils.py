@@ -22,7 +22,7 @@ def get_features_labels(
     ]
     X = df.loc[:, feature_columns]
     y = df.loc[:, target_column]
-    X = X.fillna(X.mean())
+    X = X.fillna(X.median())
     return X, y
 
 

@@ -80,7 +80,7 @@ class TrainModel:
 
     def process_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """Basic feature processor that fills NaN values with mean"""
-        df = df.fillna(df.mean())
+        df = df.fillna(df.median())
         return df
 
     def is_data_leaking(
@@ -129,7 +129,7 @@ class TrainModel:
         model = self.get_model()
         model.fit(batch_X, batch_y)
         y_pred = model.predict(batch_X)
-        return np.allclose(y_pred, batch_y):
+        return np.allclose(y_pred, batch_y)
 
     def get_model(self) -> Any:
         """Returns the current model class that is being used"""
