@@ -26,4 +26,5 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pip install -r requirements.txt
-          pytest --no-header -v
+          pip install pytest-xdist
+          pytest --no-header -v -n auto
