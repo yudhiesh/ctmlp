@@ -111,9 +111,7 @@ class TrainModel:
             .exist.unique()
             .tolist()
         )
-        if "both" in exists:
-            return True
-        return False
+        return "both" in exists
 
     def is_overfitting_batch(self) -> bool:
         """
