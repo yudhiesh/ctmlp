@@ -80,7 +80,7 @@ class TrainModel:
 
     def process_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """Basic feature processor that fills NaN values with mean"""
-        df = df.fillna(df.median())
+        df = df.fillna(df.mean())
         return df
 
     def is_data_leaking(
