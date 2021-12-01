@@ -25,5 +25,5 @@ jobs:
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pip install -r requirements.txt
+          pip install -r requirements_dev.txt
           pytest --no-header -v
