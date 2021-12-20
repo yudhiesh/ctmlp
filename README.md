@@ -79,7 +79,7 @@ pytest --no-header -v
 # located at src/models/train_model.py
 
 is_data_leaking()                    # checks if there is data leakage detected
-is_overfitting_batch()                 # checks if the model is able to overfit a single batch of data
+is_overfitting_batch()               # checks if the model is able to overfit a single batch of data
 
 # post-train tests
 # located at tests/test_post_train.py
@@ -87,7 +87,7 @@ is_overfitting_batch()                 # checks if the model is able to overfit 
 test_invariance_tests()              # checks for small perturbations that should not impact the models predictions
 test_directional_expectation_tests() # checks for small perturbations that should impact the model
 test_model_inference_times()         # check that the models inference speed at the 99th percentile is acceptable
-test_model_metric()                    # check that the models metric is below a set score
+test_model_metric()                  # check that the models metric is below a set score
 ```
 
 ## Related
