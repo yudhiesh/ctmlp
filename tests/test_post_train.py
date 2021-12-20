@@ -62,10 +62,19 @@ def test_directional_expectation_tests(
         model,
         **kwargs,
     )
+    # currently only test that the perturbations result in a positive change in
+    # the prediction
+    # a more complete version would include changes that result in negative
+    # change
     assert changed_score > unchanged_score
 
 
 def test_model_inference_times(request, dataset, model):
+    """
+    Test that the inference_time of the trained model is below a set value for
+    the 99th percentile.
+    inference_time can be altered by changing the value in pytest.ini
+    """
     X, _ = get_features_labels(dataset, target_column="SalePrice")
     latency = np.array([time_predict(model, X) for _ in range(100)])
     latency_p99 = np.quantile(latency, 0.99)
@@ -76,6 +85,11 @@ def test_model_inference_times(request, dataset, model):
 
 
 def test_model_metric(request, model_metrics):
+    """
+    Test that the trained model is able to perform better than the predefinced
+    evaluation metric, which is RMSE in this case.
+    rmse can be altered in pytest.ini
+    """
     current_score = model_metrics.get("rmse")
     rmse = request.config.getini("rmse")
     assert int(current_score) <= int(rmse)
